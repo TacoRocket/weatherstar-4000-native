@@ -4,12 +4,12 @@ This is the active queue for additional pages. Existing reference code is not pr
 
 The twelve-page baseline already includes Weekend Forecast, Sun & Moon, Air Quality and UV Index. Those four pages are not future additions. Temperature and precipitation history and configured local RSS news are also in that baseline.
 
-## Active: public traffic RSS and temperature graph
+## Delivered: public traffic RSS and temperature graph
 
 - **Generic traffic RSS:** the public page accepts a configured RSS source and renders its text, status and timestamps. Its coverage follows that feed, not the weather coordinates. Cleared incidents, inactive scheduled closures and failed retrievals must remain distinct. A Houston-specific congestion-map experiment is private and is not included in this repository or its public feature claims. Cameras and map-data redistribution are outside the public slice.
 - **Seven-day temperature graph:** reuse the existing NOAA forecast. Pair actual daytime and nighttime values by date; never invent a missing high or low. This adds a presentation of existing data, not another weather provider.
 
-Both page names are present in the current code and are opt-in after the default twelve pages. Current viewing validation, resource comparison and image publication are still pending; code presence is not their completion criterion. Report rendering cost separately from any new collection cost.
+Both pages are opt-in after the default twelve. Real-feed rendering was checked, the image was published, and anonymous GHCR pull passed. An extended private sixteen-page playback run also exercised these pages, but it does not isolate their individual resource cost. TV-app viewing remains unverified; see the benchmark evidence boundaries.
 
 ## Deferred: pages using existing data
 

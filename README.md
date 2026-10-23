@@ -4,7 +4,7 @@ A retro weather channel for your own screen: animated weather icons, forecasts, 
 
 The collector keeps weather data ready. Rendering and encoding start when a viewer requests HLS and stop after 120 seconds without playback requests. Multiple viewers share one producer.
 
-**Publication status:** the GHCR workflow is configured; the image instructions below become usable after its first successful publication. Current public-build playback and resource validation are pending. Historical twelve-page results are documented separately in [Benchmarks](docs/BENCHMARKS.md).
+**Available now:** public AMD64 images are published to GHCR and anonymous pull has been verified. The graph and RSS page have been rendered against real feeds. See [Benchmarks](docs/BENCHMARKS.md) for measured playback and resource limits.
 
 ## On screen
 
@@ -28,7 +28,7 @@ cp .env.example .env
 
 Edit `.env` with your latitude, longitude, location label and time zone. Set `WEATHERSTAR_PUBLIC_URL` to the HTTP address your viewers can reach, including the published port; `localhost` works only on the server itself. NOAA coverage limits the current application to supported US locations.
 
-Once the image is published:
+Start the channel:
 
 ```sh
 docker pull ghcr.io/tacorocket/weatherstar-4000-native:latest

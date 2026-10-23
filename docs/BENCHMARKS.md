@@ -34,3 +34,11 @@ Provider fetch success also does not establish observation freshness: the protot
 Exact behavior differs from the Python reference in documented ways: history advances more slowly between rotations; failed RSS/radar updates keep last-good content; missing historical precipitation remains unknown; wind units are respected; an unsupported pressure arrow is omitted; and radar attribution identifies NOAA. The comparison establishes the sampled twelve-page capability, not universal pixel equivalence.
 
 Original raw recordings and environment details remain private. These aggregate results are included for context and are not a reproducibility package for the public revision. Current validation should record its exact revision, selected pages, sources, audio mode and measurement conditions alongside results.
+
+## Initial public release checks
+
+Source revision `5d4d4f0` built successfully in GitHub Actions. GHCR anonymous manifest retrieval and Docker pull passed for `sha256:26fa67c06a1bd5450178564d35f9e1eb0dbd84ae689947e0fae9bafa5235db84` (linux/amd64). The pulled image collected real NOAA and configured traffic RSS data and rendered frames successfully.
+
+The graph and RSS screenshots were inspected; missing forecast bounds remain N/A. A direct network-disabled location-change exercise confirmed that changed coordinates discard the previous location's cached weather, while numerically identical coordinates retain it. An initial missing optional provider displays Waiting for data instead of an epoch timestamp.
+
+Separate five-minute pre-release runs compared the twelve-page public candidate with a private sixteen-page extension. They exercised the optional graph and RSS pages but also changed private content and received different feed results; those runs do not isolate the public additions' individual overhead. They are not substituted for a controlled fourteen-versus-twelve benchmark here.
