@@ -1,0 +1,4 @@
+services:
+  weatherstar:
+    image: weatherstar-4000-native:local
+    build: .

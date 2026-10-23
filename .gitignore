@@ -1,0 +1,16 @@
+.env
+.env.*
+!.env.example
+.DS_Store
+build/
+out/
+data/
+stream/
+evidence/
+__pycache__/
+*.pyc
+assets/music/
+*.mp3
+*.wav
+*.flac
+*.m4a

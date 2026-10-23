@@ -1,0 +1,36 @@
+# Benchmark evidence and limits
+
+These are historical results from an isolated twelve-page native prototype on October 22, 2026. They are **not measurements of the current configurable fourteen-page public build**, its silent-audio default or its traffic and graph additions.
+
+Each resource window lasted about 302 seconds with 15-second samples and a concurrently measured Python reference. CPU is relative to one core; memory is mean container working set.
+
+| Window | Python CPU | Native CPU | Python memory | Native memory |
+|---|---:|---:|---:|---:|
+|Cold idle, no viewers|43.77%|0.28%|202.95 MiB|14.38 MiB|
+|Viewing|45.25%|21.46%|202.86 MiB|78.30 MiB|
+
+The viewing prototype used about 53% less CPU and 61% less memory in this comparison. Peak working sets were 203.83 MiB and 86.37 MiB respectively. This is one environment and short run, not a hardware-independent performance guarantee.
+
+Cold idle was measured before later icon/background and HTTP corrections, while neither renderer nor encoder was running. It does not establish immediate post-playback memory reclamation. After the idle timeout, a separate point sample showed 20.38 MiB and zero sampled CPU; that point is not another five-minute average. Build caches and image sizes are separate from runtime working set.
+
+## What the prototype demonstrated
+
+- Twelve pages were compared against the reference's complete rotation. Incorrect backgrounds and missing icons were corrected and rechecked.
+- A 310-second H.264 640×480/30 fps and AAC recording decoded successfully. All 9,300 video packets advanced continuously at 1/30 second, without duplicate or backward timestamps.
+- Selected frame pairs showed ticker movement, an animated Sunny icon, changing radar frames, scrolling hourly/history rows and later news headlines.
+- Two clients shared one producer. Cold playlist readiness was 2.219 seconds; this measures playlist availability, not a TV player's first picture.
+- The 120-second inactivity policy stopped renderer and encoder. A new request started a fresh producer generation and fresh segment names.
+- Collection continued without a viewer and refreshed a snapshot during playback without a video timestamp gap.
+- A separate network-disabled failure exercise preserved last-good data, original timestamps and radar files while recording errors.
+
+The recorded prototype included externally supplied music. A short audio timestamp interval at its loop boundary also occurred in the reference; no listening assessment was performed. The public image bundles no music and defaults to silence.
+
+## What remains unproven
+
+The historical recording does not prove every weather icon, all thirty historical dates across repeated visits, overnight stability, current public-build performance or playback in a particular TV application. TV-app compatibility and perceived smoothness remain unverified. Additional pages and configurable source gating require their own current viewing/resource evidence.
+
+Provider fetch success also does not establish observation freshness: the prototype retained an older NOAA observation supplied by its selected station. Failure retention and timestamps must not be described as live upstream measurements when the underlying report is old.
+
+Exact behavior differs from the Python reference in documented ways: history advances more slowly between rotations; failed RSS/radar updates keep last-good content; missing historical precipitation remains unknown; wind units are respected; an unsupported pressure arrow is omitted; and radar attribution identifies NOAA. The comparison establishes the sampled twelve-page capability, not universal pixel equivalence.
+
+Original raw recordings and environment details remain private. These aggregate results are included for context and are not a reproducibility package for the public revision. Current validation should record its exact revision, selected pages, sources, audio mode and measurement conditions alongside results.

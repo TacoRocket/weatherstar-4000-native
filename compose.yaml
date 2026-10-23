@@ -1,0 +1,14 @@
+services:
+  weatherstar:
+    image: ghcr.io/tacorocket/weatherstar-4000-native:latest
+    init: true
+    env_file: .env
+    ports:
+      - "${WEATHERSTAR_PORT:-8080}:8080"
+    volumes:
+      - weather-data:/data
+    tmpfs:
+      - /stream:uid=1001,gid=1001,mode=0755
+    restart: unless-stopped
+volumes:
+  weather-data:

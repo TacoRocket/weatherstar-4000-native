@@ -1,0 +1,15 @@
+.git
+.env
+.env.*
+!.env.example
+build/
+out/
+data/
+stream/
+__pycache__/
+*.pyc
+assets/music/
+*.mp3
+*.wav
+*.flac
+*.m4a
