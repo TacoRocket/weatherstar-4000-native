@@ -2,7 +2,7 @@
 
 ## WeatherStar reference
 
-Renderer layout, behavior and bundled backgrounds, icons, fonts and logos derive from [wesellis/weatherstar-4000](https://github.com/wesellis/weatherstar-4000), including the repaired reference branch at [TacoRocket/weatherstar-4000](https://github.com/TacoRocket/weatherstar-4000/tree/headless-display-repairs).
+Renderer layout, behavior and bundled backgrounds, icons, fonts and logos derive from [wesellis/weatherstar-4000](https://github.com/wesellis/weatherstar-4000), including local display and headless-performance repairs made to that Python reference before this native implementation. The temporary Python fork has been retired.
 
 The copied upstream license is reproduced in full in [LICENSE](LICENSE): **MIT License; Copyright (c) 2024 WeatherStar 4000 Python Contributors.** Keep that notice with substantial copies of the software and associated material. This identifies the upstream repository's license; it does not claim ownership of third-party trademarks or endorsement by their owners.
 
