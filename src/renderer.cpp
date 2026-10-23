@@ -120,8 +120,8 @@ class Renderer {
   size_t textBytes = 0;
   std::map<std::string, Icon> icons;
   size_t iconBytes = 0;
-  std::array<Surface, 14> pages;
-  std::array<std::vector<Placement>, 14> placements;
+  std::array<Surface, weatherstar::page_names.size()> pages;
+  std::array<std::vector<Placement>, weatherstar::page_names.size()> placements;
   std::vector<Surface> radar;
   std::vector<std::string> newsLines, hourLines, ticker;
   std::vector<std::pair<std::string, bool>> trafficLines;
@@ -760,7 +760,7 @@ class Renderer {
     }
     ticker.push_back(
         " +++ VISIT WEATHER.GOV FOR THE LATEST WEATHER INFORMATION +++ ");
-    for (building = 0; building < 14; building++) {
+    for (building = 0; building < int(weatherstar::page_names.size()); building++) {
       if (std::find(enabledPages.begin(), enabledPages.end(), building) ==
           enabledPages.end())
         continue;
@@ -809,6 +809,12 @@ class Renderer {
         break;
       case 13:
         traffic();
+        break;
+      case 14:
+        header(5, str(get(data, "traffic_map"), "title", "Traffic"), "Flow");
+        break;
+      case 15:
+        header(5, str(get(data, "traffic_map"), "title", "Traffic"), "Bottlenecks");
         break;
       }
     }
@@ -991,6 +997,20 @@ public:
       }
       SDL_SetClipRect(target.get(), nullptr);
     }
+    if (page == 14 || page == 15) {
+      const auto &map = get(data, "traffic_map");
+      const double updated = num(get(map, "source_updated_at"));
+      const double age = time(nullptr) - updated;
+      if (!std::isfinite(updated) || updated <= 0 || age > 900 || age < -300 ||
+          !str(get(data, "errors"), "traffic_map").empty()) {
+        unavailable("Traffic data unavailable or stale");
+      } else {
+        const auto file = str(map, page == 14 ? "flow_image" : "bottlenecks_image");
+        auto picture = image(file);
+        if (picture) blit(picture, 64, 105);
+        else unavailable("Traffic map unavailable");
+      }
+    }
     if (page == 13) {
       SDL_Rect clip{64, 105, 512, 275};
       SDL_SetClipRect(target.get(), &clip);
@@ -1080,7 +1100,7 @@ int main(int argc, char **argv) {
     Renderer r(assets, snapshot, preparedPages);
     if (!dump.empty()) {
       std::filesystem::create_directories(dump);
-      for (int p = 0; p < 14; p++) {
+      for (int p = 0; p < int(weatherstar::page_names.size()); p++) {
         auto path =
             dump + "/page-" + (p < 10 ? "0" : "") + std::to_string(p) + ".bmp";
         if (SDL_SaveBMP(r.draw(p, p * 15 + 5), path.c_str()))

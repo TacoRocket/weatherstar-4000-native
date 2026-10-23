@@ -20,6 +20,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY --from=build /build/out/weather-render /build/out/weather-collect /build/out/weather-serve /usr/local/bin/
 COPY assets/ /app/weatherstar_assets/
 COPY src/collector_helper.py /app/collector_helper.py
+COPY src/traffic_map.py /app/traffic_map.py
+COPY config/traffic/ /app/config/traffic/
 COPY --chmod=755 scripts/start.sh /app/start.sh
 COPY LICENSE /app/LICENSE
 ENV TZ=America/New_York
