@@ -12,7 +12,13 @@ WEATHERSTAR_TRAFFIC_MAP_CONFIG=/app/config/traffic/houston.json
 ```
 
 For your own layout, copy `config/traffic/houston.json`, edit it, mount it into the
-container, and point that variable at its container path. Keep `title` short
+container, and point that variable at its container path. For example, add this read-only mount under the existing service volumes:
+
+```yaml
+      - ./my-traffic.json:/app/config/traffic/custom.json:ro
+```
+
+Then set `WEATHERSTAR_TRAFFIC_MAP_CONFIG=/app/config/traffic/custom.json` in `.env`. Keep `title` short
 (roughly 20 characters) for the television header. The included example describes
 regional roads and landmarks; it contains no household location or ZIP code.
 

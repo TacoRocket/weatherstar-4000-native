@@ -1,6 +1,6 @@
 # Benchmark evidence and limits
 
-These are historical results from an isolated twelve-page native prototype on October 22, 2026. They are **not measurements of the current configurable fourteen-page public build**, its silent-audio default or its traffic and graph additions.
+These are historical results from an isolated twelve-page native prototype on October 22, 2026. They are **not measurements of the current configurable sixteen-page public build**, its silent-audio default or its traffic and graph additions.
 
 Each resource window lasted about 302 seconds with 15-second samples and a concurrently measured Python reference. CPU is relative to one core; memory is mean container working set.
 
@@ -41,4 +41,22 @@ Source revision `5d4d4f0` built successfully in GitHub Actions. GHCR anonymous m
 
 The graph and RSS screenshots were inspected; missing forecast bounds remain N/A. A direct network-disabled location-change exercise confirmed that changed coordinates discard the previous location's cached weather, while numerically identical coordinates retain it. An initial missing optional provider displays Waiting for data instead of an epoch timestamp.
 
-Separate five-minute pre-release runs compared the twelve-page public candidate with a private sixteen-page extension. They exercised the optional graph and RSS pages but also changed private content and received different feed results; those runs do not isolate the public additions' individual overhead. They are not substituted for a controlled fourteen-versus-twelve benchmark here.
+Separate five-minute pre-release runs compared the twelve-page public candidate with a private sixteen-page extension. They exercised the optional graph and RSS pages but also changed private content and received different feed results; those runs do not isolate the public additions' individual overhead. They are not substituted for a controlled optional-page benchmark here.
+
+## Controlled optional-page comparison
+
+The configurable-map implementation at `4734a18` was measured on October 22, 2026 using the same AMD64 image, frozen Washington weather/radar inputs, fixed regional Houston traffic readings, silent audio, 640×480 at 30 fps, and software H.264 encoding. Three isolated containers ran concurrently on the same host, each limited to one CPU core and 512 MiB RAM. Each had a 35-second warm-up before the roughly five-minute measurement. Viewers ran in separate containers and were excluded from these memory totals.
+
+Disabled cases omitted the unused traffic snapshot fields and map files. The graph reuses the same forecast data. No collector refresh ran during the window, so these numbers describe cached playback, not periodic collection peaks. Working set is cgroup memory minus inactive file cache, sampled once per second.
+
+| Rotation | Mean RAM | Peak RAM | CPU, percent of one core |
+|---|---:|---:|---:|
+|Base twelve pages|72.10 MiB|76.25 MiB|17.60%|
+|Base plus temperature graph|74.87 MiB|78.27 MiB|20.92%|
+|Graph plus RSS, Flow and Bottlenecks|82.41 MiB|88.77 MiB|18.87%|
+
+The full rotation used about **10.30 MiB more average memory than the base (14.3%)**. Traffic added about **7.54 MiB** beyond the graph-only case. CPU varies with page content and encoder input; the lower CPU of the full rotation than graph-only is not evidence that traffic improves efficiency. All three streams decoded for 370 seconds without warnings.
+
+Separately, one real traffic refresh peaked at **41.02 MiB child-process RSS**, then exited. This measures the helper process, not incremental container working set, and must not be added to the table as an exact combined peak. Collection remains a short-lived five-minute job, independent of continuous rendering.
+
+Validation also checked disabled map collection, missing configuration, invalid changed configuration, source-age suppression and both full traffic frames. The configured parser produced identical rows and 42 directional aggregates to the prior Houston implementation on the same feed. This run does not establish overnight stability, TV-app compatibility or idle-memory behavior.
