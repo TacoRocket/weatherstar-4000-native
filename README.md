@@ -111,6 +111,21 @@ Intervals are minimum refresh spacing, checked by the collector loop. Failed ref
 
 The default stream contains silent AAC audio. No music is bundled. To use your own audio, add a read-only file mount to Compose and set `WEATHERSTAR_MUSIC_FILE` to its absolute path **inside the container**. The file loops through FFmpeg; use audio you have permission to play.
 
+## Optional Intel hardware encoding
+
+Software H.264 (`WEATHERSTAR_ENCODER=software`) remains the default and needs no GPU. On a Linux host with an Intel GPU that supports low-power H.264 VAAPI encoding, enable the supplied override:
+
+```sh
+export WEATHERSTAR_RENDER_GID=$(stat -c '%g' /dev/dri/renderD128)
+docker compose -f compose.yaml -f compose.vaapi.yaml up -d
+```
+
+The override selects `WEATHERSTAR_ENCODER=vaapi-low-power`, passes only the render device, and adds its numeric host group to the existing unprivileged container user. It does not require privileged mode. To use another host render node, set `WEATHERSTAR_VAAPI_DEVICE` in `.env` and obtain the group ID from that node; the override maps it to `/dev/dri/renderD128` inside the container. The image includes Intel's media driver. Host kernel/firmware support is still required; low-power encoding has been exercised on an Alder Lake iGPU, not every Intel generation.
+
+The native service uploads NV12 frames with FFmpeg's `hwupload`, selects `h264_vaapi -low_power 1`, and explicitly requests **H.264 Constrained Baseline, level 3.0, CAVLC and no B-frames**. This preserves the software stream's profile class instead of inheriting the hardware encoder's High-profile default. Resolution, frame rate, bitrate target, two-second keyframe spacing, HLS and AAC audio remain unchanged. Actual hardware compatibility must be verified on the target host and client.
+
+`/health` reports the selected `encoder`. Unknown encoder names and unreadable/unwritable devices fail startup; runtime encoder failures appear in container logs and producer health. There is no silent switch to software. To return to software, set `WEATHERSTAR_ENCODER=software` in `.env` and recreate using only the base Compose file. See [encoder measurements and playback limits](docs/BENCHMARKS.md#hardware-encoding).
+
 ## How it works
 
 ```text

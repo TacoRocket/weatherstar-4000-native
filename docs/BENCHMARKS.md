@@ -60,3 +60,17 @@ The full rotation used about **10.30 MiB more average memory than the base (14.3
 Separately, one real traffic refresh peaked at **41.02 MiB child-process RSS**, then exited. This measures the helper process, not incremental container working set, and must not be added to the table as an exact combined peak. Collection remains a short-lived five-minute job, independent of continuous rendering.
 
 Validation also checked disabled map collection, missing configuration, invalid changed configuration, source-age suppression and both full traffic frames. The configured parser produced identical rows and 42 directional aggregates to the prior Houston implementation on the same feed. This run does not establish overnight stability, TV-app compatibility or idle-memory behavior.
+
+## Hardware encoding
+
+A separate October 22, 2026 comparison on an Intel Core i3-1220P used the same native binaries, all sixteen pages, frozen weather/RSS/radar/map data and supplied music. Each sequential case had a 30-second warm-up and approximately five minutes of CPU/memory measurement. Collection was disabled. Only traffic-map freshness metadata was reset between cases to keep identical map pixels visible; clocks continued to advance. CPU uses one core as 100%; RAM is container working set.
+
+| Encoder | Average CPU | Average RAM | Peak RAM |
+|---|---:|---:|---:|
+|Software, libx264 ultrafast|28.58%|82.18 MiB|90.55 MiB|
+|Standard VAAPI, low_power=0|21.49%|96.49 MiB|100.58 MiB|
+|Low-power VAAPI, low_power=1|20.17%|80.44 MiB|84.05 MiB|
+
+Low-power used 29.4% less CPU than software in this window, with similar RAM. The 1.32 percentage-point CPU difference between hardware modes is not conclusive from one run. Renderer CPU also varied, so the entire reduction is not attributable to encoding alone. No CPU throttling occurred, and no electrical power was measured.
+
+All three streams completed six minutes of continuous FFmpeg audio/video decoding with no warnings or dropped/duplicated frames. Samples preserved H.264 640x480 at 30 fps and stereo AAC; inspected stills had no obvious corruption. These were not frame-synchronized quality comparisons or TV-client/overnight tests. The trial hardware streams used their default High profile. The supported low-power mode explicitly selects Constrained Baseline level 3.0 with no B-frames. A separate six-minute native-binary decode passed with those settings, and ffprobe confirmed the requested profile, level and absence of B-frames. Three consecutive original HLS segments each decoded independently and began with keyframes exactly two seconds apart. The software default also passed a 30-second video/audio decode without GPU access. The table above remains the earlier default-profile comparison, not a measurement of these explicit compatibility settings.

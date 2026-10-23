@@ -10,7 +10,7 @@ No reference music is copied into this repository or its image. The source-code 
 
 ## Runtime and build dependencies
 
-The image installs Debian packages for SDL2, SDL2_image, SDL2_ttf, FFmpeg, libcurl, libxml2, cpp-httplib, nlohmann-json, Python, Ephem and Pillow, with their transitive dependencies. These components retain their own licenses; the project's MIT license does not replace them. Debian package copyright/license records are available under `/usr/share/doc/<package>/copyright` in the relevant image stage. CMake and the C++ toolchain are build-stage dependencies.
+The image installs Debian packages for SDL2, SDL2_image, SDL2_ttf, FFmpeg, libcurl, libxml2, cpp-httplib, nlohmann-json, Python, Ephem and Pillow, with their transitive dependencies. It also includes `intel-media-va-driver-non-free` from Debian's non-free component for optional Intel VAAPI encoding; that package includes separately licensed media kernels. These components retain their own licenses; the project's MIT license does not replace them. Debian package copyright/license records are available under `/usr/share/doc/<package>/copyright` in the relevant image stage. CMake and the C++ toolchain are build-stage dependencies.
 
 ## External data
 

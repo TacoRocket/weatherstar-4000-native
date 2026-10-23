@@ -9,9 +9,10 @@ COPY src/ ./src/
 RUN cmake -S . -B out -DCMAKE_BUILD_TYPE=Release && cmake --build out -j2
 
 FROM debian:trixie-slim
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN sed -i 's/Components: main$/Components: main non-free/' /etc/apt/sources.list.d/debian.sources \
+    && apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates tzdata ffmpeg libsdl2-2.0-0 libsdl2-image-2.0-0 libsdl2-ttf-2.0-0 \
-    libcurl4t64 libxml2 libcpp-httplib0.18 python3-ephem python3-pil \
+    libcurl4t64 libxml2 libcpp-httplib0.18 python3-ephem python3-pil intel-media-va-driver-non-free \
     && apt-get clean \
     && groupadd --gid 1001 weatherstar \
     && useradd --uid 1001 --gid 1001 --no-create-home weatherstar \
