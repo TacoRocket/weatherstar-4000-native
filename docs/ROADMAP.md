@@ -6,10 +6,10 @@ The twelve-page baseline already includes Weekend Forecast, Sun & Moon, Air Qual
 
 ## Delivered: public traffic RSS and temperature graph
 
-- **Generic traffic RSS:** the public page accepts a configured RSS source and renders its text, status and timestamps. Its coverage follows that feed, not the weather coordinates. Cleared incidents, inactive scheduled closures and failed retrievals must remain distinct. A Houston-specific congestion-map experiment is private and is not included in this repository or its public feature claims. Cameras and map-data redistribution are outside the public slice.
+- **Generic traffic RSS:** the public page accepts a configured RSS source and renders its text, status and timestamps. Its coverage follows that feed, not the weather coordinates. Cleared incidents, inactive scheduled closures and failed retrievals must remain distinct. Optional Flow and Bottlenecks pages now use a separate map configuration, with a Houston TranStar adapter and regional Houston example. No captured map-data corpus, cameras or provider tiles are bundled.
 - **Seven-day temperature graph:** reuse the existing NOAA forecast. Pair actual daytime and nighttime values by date; never invent a missing high or low. This adds a presentation of existing data, not another weather provider.
 
-Both pages are opt-in after the default twelve. Real-feed rendering was checked, the image was published, and anonymous GHCR pull passed. An extended private sixteen-page playback run also exercised these pages, but it does not isolate their individual resource cost. TV-app viewing remains unverified; see the benchmark evidence boundaries.
+The graph and all three traffic pages are opt-in after the default twelve. Real-feed rendering was checked, the image was published, and anonymous GHCR pull passed. An extended private sixteen-page playback run also exercised these pages, but it does not isolate their individual resource cost. TV-app viewing remains unverified; see the benchmark evidence boundaries.
 
 ## Deferred: pages using existing data
 

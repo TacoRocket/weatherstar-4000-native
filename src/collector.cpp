@@ -172,6 +172,32 @@ int main(int argc,char** argv) {
         auto parsed=traffic_feed(fetch(url),env("WEATHERSTAR_TRAFFIC_SOURCE","Local Traffic"),url,now);
         s["traffic"]=std::move(parsed);
     });
+    if(enabled("traffic-flow") || enabled("traffic-bottlenecks")) {
+        const auto config=env("WEATHERSTAR_TRAFFIC_MAP_CONFIG","");
+        try {
+            if(config.empty()) throw std::runtime_error("Set WEATHERSTAR_TRAFFIC_MAP_CONFIG to a map configuration file");
+            const auto definition=read(config);
+            if(s.value("traffic_map_config",json())!=definition) {
+                s.erase("traffic_map");
+                s["collector_checked"].erase("traffic_map");
+                s["traffic_map_config"]=definition;
+            }
+            run("traffic_map",300,[&]{
+                const auto output=state/"traffic-map";
+                pid_t pid=fork(); if(pid<0) throw std::runtime_error("fork traffic map failed");
+                if(pid==0) { execlp("python3","python3","/app/traffic_map.py","--config",config.c_str(),"--output-dir",output.c_str(),nullptr); _exit(127); }
+                int result=0;
+                if(waitpid(pid,&result,0)<0 || !WIFEXITED(result) || WEXITSTATUS(result)!=0)
+                    throw std::runtime_error("Traffic map refresh failed");
+                s["traffic_map"]=read(output/"metadata.json");
+            });
+        } catch(const std::exception& e) {
+            s.erase("traffic_map");
+            s["errors"]["traffic_map"]=e.what();
+            s["collector_checked"].erase("traffic_map");
+            std::cerr<<"traffic_map: "<<e.what()<<"\n";
+        }
+    }
     if(enabled("radar")) run("radar",300,[&]{ auto dir=state/"radar"/std::to_string(now); fs::create_directories(dir); json frames=json::array();
         for(int i=0;i<6;i++) { auto suffix=std::to_string(i); std::string failure; bool loaded=false;
             for(auto url:{"https://radar.weather.gov/ridge/standard/CONUS-LARGE_"+suffix+".gif","https://radar.weather.gov/ridge/standard/CONUS_"+suffix+".gif","https://radar.weather.gov/ridge/lite/N0R/CONUS_"+suffix+".png"}) try {

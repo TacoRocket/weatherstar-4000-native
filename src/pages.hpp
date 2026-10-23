@@ -8,7 +8,7 @@
 #include <vector>
 
 namespace weatherstar {
-inline constexpr std::array<const char *, 14> page_names{
+inline constexpr std::array<const char *, 16> page_names{
     "current",
     "local",
     "extended",
@@ -22,7 +22,9 @@ inline constexpr std::array<const char *, 14> page_names{
     "precipitation-history",
     "news",
     "temperature-graph",
-    "traffic"};
+    "traffic",
+    "traffic-flow",
+    "traffic-bottlenecks"};
 
 inline int page_index(const std::string &name) {
   auto found = std::find(page_names.begin(), page_names.end(), name);

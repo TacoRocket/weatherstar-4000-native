@@ -4,7 +4,7 @@ A retro weather channel for your own screen: animated weather icons, forecasts, 
 
 The collector keeps weather data ready. Rendering and encoding start when a viewer requests HLS and stop after 120 seconds without playback requests. Multiple viewers share one producer.
 
-**Available now:** public AMD64 images are published to GHCR and anonymous pull has been verified. The graph and RSS page have been rendered against real feeds. See [Benchmarks](docs/BENCHMARKS.md) for measured playback and resource limits.
+**Available now:** public AMD64 images are published to GHCR and anonymous pull has been verified. Optional graph, RSS and configured traffic-map pages are available. See [Benchmarks](docs/BENCHMARKS.md) for measured playback and resource limits.
 
 ## On screen
 
@@ -14,7 +14,9 @@ The collector keeps weather data ready. Rendering and encoding start when a view
 
 ![Configured traffic RSS](docs/images/traffic-rss.png)
 
-Screenshots use Washington weather and a separately configured Houston RSS feed. Traffic geography follows the feed URL.
+![Optional Houston schematic](docs/images/traffic-bottlenecks.png)
+
+Screenshots use Washington weather and separately configured regional Houston traffic sources. Traffic geography follows the feed URL.
 
 ## Quick start
 
@@ -47,7 +49,7 @@ The HTTP service has no authentication or TLS. The supplied configuration is for
 
 ## Choose your pages
 
-`WEATHERSTAR_PAGES` is an ordered, comma-separated list. Each page lasts 15 seconds. The default is the first twelve below; add `temperature-graph` and/or `traffic` to enable the additional pages. Empty, duplicate and unknown page names are rejected.
+`WEATHERSTAR_PAGES` is an ordered, comma-separated list. Each page lasts 15 seconds. The default is the first twelve below; add `temperature-graph`, `traffic`, `traffic-flow` and/or `traffic-bottlenecks` to enable the additional pages. All traffic pages default off. Empty, duplicate and unknown page names are rejected.
 
 | Name | Page |
 |---|---|
@@ -65,8 +67,10 @@ The HTTP service has no authentication or TLS. The supplied configuration is for
 |`news`|Dated publisher RSS headlines|
 |`temperature-graph`|Forecast high/low graph using actual dated periods|
 |`traffic`|Configured traffic RSS text, preserving status and timestamps|
+|`traffic-flow`|Configured road map colored by travel-time-weighted speed|
+|`traffic-bottlenecks`|Same map colored by its slowest measured stretches|
 
-Set `WEATHERSTAR_NEWS_RSS_URL` and `WEATHERSTAR_NEWS_SOURCE` for news; an empty URL leaves that page unavailable. Traffic uses `WEATHERSTAR_TRAFFIC_RSS_URL` and `WEATHERSTAR_TRAFFIC_SOURCE`. Its scope is the configured feed, independent of weather coordinates. It is a text page, not a congestion map. No synthetic news or traffic measurements are supplied.
+Set `WEATHERSTAR_NEWS_RSS_URL` and `WEATHERSTAR_NEWS_SOURCE` for news; an empty URL leaves that page unavailable. Traffic uses `WEATHERSTAR_TRAFFIC_RSS_URL` and `WEATHERSTAR_TRAFFIC_SOURCE`. Its scope is the configured feed, independent of weather coordinates. The RSS page displays text. The independent map pages use `WEATHERSTAR_TRAFFIC_MAP_CONFIG`; the included Houston example is `/app/config/traffic/houston.json`. Map geometry, labels and corridor selection live in that configuration, separate from the page renderer. TranStar is the first supported map-data adapter; a different provider needs an adapter, not just an RSS URL. See [Traffic configuration](docs/TRAFFIC.md). No synthetic news or traffic measurements are supplied.
 
 Removing optional pages stops their associated collection when no remaining page needs that source. Sun & Moon and UV share one daily forecast request; both history pages share one historical request. Core NOAA observation/forecast/hourly collection continues independently.
 
@@ -81,7 +85,8 @@ Removing optional pages stops their associated collection when no remaining page
 |Moon events|Local Ephem calculation|Once per local day when enabled|
 |Historical temperatures and rain|Open-Meteo|1 hour when enabled|
 |News|Your configured RSS publisher|15 minutes when enabled|
-|Traffic|Your configured RSS provider|5 minutes when enabled|
+|Traffic RSS|Your configured RSS provider|5 minutes when enabled|
+|Traffic maps|Houston TranStar adapter with configured schematic|5 minutes when either map page is enabled|
 
 Intervals are minimum refresh spacing, checked by the collector loop. Failed refreshes retain prior values and original source timestamps, with errors recorded in the snapshot. Collection time does not make an old observation current. Provider coverage and availability vary; this is not an official warning service. Source links and dependency notices are in [Third-party material](THIRD_PARTY.md).
 
@@ -92,12 +97,12 @@ The default stream contains silent AAC audio. No music is bundled. To use your o
 ## How it works
 
 ```text
-Providers → C++ collector → atomic JSON snapshot + radar files
+Providers → C++ collector → atomic JSON snapshot + radar/map files
                                       ↓
 HLS request → C++ SDL renderer → raw RGB frames → FFmpeg → HLS
 ```
 
-The renderer caches artwork and text, performs no HTTP requests and requires no X server. The C++ HTTP service shares one renderer/encoder among viewers and enforces the idle timeout. Short Python helpers use Ephem for astronomy and Pillow for radar processing; this is not a claim of an entirely C++ runtime.
+The renderer caches artwork and text, performs no HTTP requests and requires no X server. The C++ HTTP service shares one renderer/encoder among viewers and enforces the idle timeout. Short Python helpers use Ephem for astronomy and Pillow for radar and optional traffic-map processing; this is not a claim of an entirely C++ runtime.
 
 The hosted workflow builds and publishes AMD64 images on `main`, version tags and manual runs. Pull requests build without publishing. See [Benchmarks](docs/BENCHMARKS.md) for measured limits and [Roadmap](docs/ROADMAP.md) for deferred pages.
 
