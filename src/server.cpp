@@ -55,6 +55,8 @@ struct Producer {
  unsigned starts=0;
  std::string last_error;
  int idle_seconds=120;
+ bool vaapi=false;
+ std::string vaapi_device="/dev/dri/renderD128";
  bool active_locked(){return renderer>0 && encoder>0;}
  void stop_locked(){terminate(encoder);terminate(renderer);}
  bool ensure(){
@@ -75,13 +77,21 @@ struct Producer {
    int pipes[2]; if(pipe2(pipes,O_CLOEXEC)!=0) throw std::runtime_error("raw-frame pipe failed");
    try {
     renderer=spawn_process({"weather-render","--snapshot","/data/snapshot.json","--assets","/app/weatherstar_assets"},-1,pipes[1],pipes[0]);
-    std::vector<std::string> encode_args={"ffmpeg","-nostdin","-hide_banner","-loglevel","warning","-y","-threads","2",
-      "-f","rawvideo","-pixel_format","rgb24","-video_size","640x480","-framerate","30","-i","pipe:0"};
+    std::vector<std::string> encode_args={"ffmpeg","-nostdin","-hide_banner","-loglevel","warning","-y","-threads","2"};
+    if(vaapi) encode_args.insert(encode_args.end(),{"-vaapi_device",vaapi_device});
+    encode_args.insert(encode_args.end(),{"-f","rawvideo","-pixel_format","rgb24","-video_size","640x480","-framerate","30","-i","pipe:0"});
     if(music.empty()) encode_args.insert(encode_args.end(),{"-f","lavfi","-i","anullsrc=channel_layout=stereo:sample_rate=48000"});
     else encode_args.insert(encode_args.end(),{"-stream_loop","-1","-i",music});
+    encode_args.insert(encode_args.end(),{"-map","0:v","-map","1:a"});
+    if(vaapi) {
+      // VAAPI's level option takes level_idc: 30 means H.264 level 3.0.
+      encode_args.insert(encode_args.end(),{"-c:v","h264_vaapi","-low_power","1","-vf","format=nv12,hwupload",
+        "-profile:v","constrained_baseline","-level:v","30","-bf","0","-coder:v","cavlc"});
+    } else {
+      encode_args.insert(encode_args.end(),{"-c:v","libx264","-threads","2","-preset","ultrafast","-pix_fmt","yuv420p","-sc_threshold","0"});
+    }
     encode_args.insert(encode_args.end(),{
-      "-map","0:v","-map","1:a","-c:v","libx264","-threads","2","-preset","ultrafast","-pix_fmt","yuv420p",
-      "-b:v","1000k","-r","30","-g","60","-sc_threshold","0","-af","volume=0.3","-c:a","aac","-b:a","128k",
+      "-b:v","1000k","-r","30","-g","60","-af","volume=0.3","-c:a","aac","-b:a","128k",
       "-f","hls","-hls_time","2","-hls_list_size","10","-hls_delete_threshold","5","-hls_start_number_source","epoch",
       "-hls_flags","delete_segments+temp_file+independent_segments","/stream/hls/stream.m3u8"});
     encoder=spawn_process(encode_args,pipes[0],-1,pipes[1]);
@@ -108,13 +118,21 @@ struct Producer {
  }
  json status(){
   std::lock_guard<std::mutex> lock(mutex);
-  return {{"streaming",active_locked()},{"renderer_pid",renderer},{"encoder_pid",encoder},{"starts",starts},{"idle_timeout_seconds",idle_seconds},{"last_error",last_error},{"snapshot_available",fs::exists("/data/snapshot.json")}};
+  return {{"streaming",active_locked()},{"renderer_pid",renderer},{"encoder_pid",encoder},{"encoder",vaapi?"vaapi-low-power":"software"},{"starts",starts},{"idle_timeout_seconds",idle_seconds},{"last_error",last_error},{"snapshot_available",fs::exists("/data/snapshot.json")}};
  }
  ~Producer(){std::lock_guard<std::mutex> lock(mutex);stop_locked();}
 };
 int main(){
  signal(SIGTERM,signal_stop);signal(SIGINT,signal_stop);signal(SIGPIPE,SIG_IGN);
  Producer producer;
+ if(const char* mode=getenv("WEATHERSTAR_ENCODER")) {
+  if(std::string(mode)=="vaapi-low-power") producer.vaapi=true;
+  else if(std::string(mode)!="software") {std::cerr<<"WEATHERSTAR_ENCODER must be software or vaapi-low-power\n";return 1;}
+ }
+ if(const char* device=getenv("WEATHERSTAR_VAAPI_DEVICE")) producer.vaapi_device=device;
+ if(producer.vaapi && access(producer.vaapi_device.c_str(),R_OK|W_OK)!=0) {
+  std::cerr<<"VAAPI render device is not readable/writable: "<<producer.vaapi_device<<"\n";return 1;
+ }
  if(const char* idle=getenv("WEATHERSTAR_IDLE_SECONDS")) producer.idle_seconds=std::max(5,std::stoi(idle));
  httplib::Server server;
  server.new_task_queue=[] {return new httplib::ThreadPool(6);};

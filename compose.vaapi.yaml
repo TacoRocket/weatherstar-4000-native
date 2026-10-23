@@ -1,0 +1,9 @@
+services:
+  weatherstar:
+    environment:
+      WEATHERSTAR_ENCODER: vaapi-low-power
+      WEATHERSTAR_VAAPI_DEVICE: /dev/dri/renderD128
+    devices:
+      - "${WEATHERSTAR_VAAPI_DEVICE:-/dev/dri/renderD128}:/dev/dri/renderD128"
+    group_add:
+      - "${WEATHERSTAR_RENDER_GID:?Set WEATHERSTAR_RENDER_GID to the host render-device group ID}"
