@@ -6,6 +6,23 @@ The collector keeps weather data ready. Rendering and encoding start when a view
 
 **Available now:** public AMD64 images are published to GHCR and anonymous pull has been verified. Optional graph, RSS and configured traffic-map pages are available. See [Benchmarks](docs/BENCHMARKS.md) for measured playback and resource limits.
 
+## CPU and memory
+
+**About 53% less CPU and 61% less RAM during playback** in our measured twelve-page comparison with the Python channel. With no viewers, the native service stops rendering and encoding while keeping data collection independent.
+
+The October 22, 2026 comparison measured both containers concurrently on the same Linux AMD64 host for about five minutes per window. Both delivered the same twelve-page rotation at 640×480 and 30 fps with software H.264 encoding and separately supplied music. CPU percentages use **one core as 100%**; RAM is average container working set.
+
+| State | Python CPU | Native CPU | Python RAM | Native RAM |
+|---|---:|---:|---:|---:|
+|No viewers, cold idle|43.77%|0.28%|202.95 MiB|14.38 MiB|
+|Watching the channel|45.25%|21.46%|202.86 MiB|78.30 MiB|
+
+The Python baseline was our modified headless channel derived from [WeatherStar 4000 Python](https://github.com/wesellis/weatherstar-4000), including display and performance repairs; these are **not measurements of an untouched upstream installation**. The native baseline was the twelve-page prototype, before the graph and traffic additions. Cold-idle RAM is not a promise of immediate memory reclamation after watching.
+
+For the later configurable build, a separate five-minute **cached-playback** measurement with all sixteen pages—including the temperature graph, traffic RSS, Flow and Bottlenecks—averaged **18.87% of one CPU core and 82.41 MiB RAM**, with an **88.77 MiB peak working set**. The base twelve pages in that same experiment averaged 17.60% CPU and 72.10 MiB RAM: the full rotation added about **10.30 MiB**. This experiment used frozen inputs and silent audio, with no collector refresh during the window; it is not another directly comparable Python-versus-native result or a measurement of collection peaks.
+
+The savings come from cached rendering, direct frames to FFmpeg without Xvfb screen capture, and stopping video production when nobody is watching—not the language choice alone. See [benchmark conditions, resource breakdown and validation limits](docs/BENCHMARKS.md) for the supporting measurements. These are short-run results from one host, not a hardware-independent guarantee.
+
 ## On screen
 
 ![Current conditions](docs/images/current.png)
